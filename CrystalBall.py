@@ -14,8 +14,8 @@ class Libro:
         self.cantidad_ordenar = cantidad_ordenar
 
 def simulacion_libreria(env, libros):
-    for libro in libros:
-        yield env.process(ventas_libreria(env, libro))  # Agregar 'yield'
+    eventos = [env.process(ventas_libreria(env, libro)) for libro in libros]
+    yield simpy.events.AllOf(env, eventos)
 
 def ventas_libreria(env, libro):
     while True:
@@ -24,13 +24,13 @@ def ventas_libreria(env, libro):
         if venta > libro.stock:
             venta = libro.stock
         libro.stock -= venta
-        print(f"Venta de '{libro.titulo}': {venta}, Stock Actual: {libro.stock}")
+        print(f"[+] Venta de '{libro.titulo}': {venta}, Stock Actual: {libro.stock}")
 
         # Reordenar si es necesario
         if libro.stock <= libro.punto_reorden:
             ordenar = libro.cantidad_ordenar
             libro.stock += ordenar
-            print(f"Reordenar '{libro.titulo}': {ordenar}, Stock Actual: {libro.stock}")
+            print(f"[+] Reordenar '{libro.titulo}': {ordenar}, Stock Actual: {libro.stock}")
 
 # Definir los datos para los 5 libros
 libros_data = [
